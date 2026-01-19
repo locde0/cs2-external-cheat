@@ -4,18 +4,20 @@
 
 extern "C" {
 	NTKERNELAPI NTSTATUS MmCopyVirtualMemory(
-		PEPROCESS SourceProcess,
-		PVOID SourceAddress,
-		PEPROCESS TargetProcess,
-		PVOID TargetAddress,
-		SIZE_T BufferSize,
-		KPROCESSOR_MODE PreviousMode,
-		PSIZE_T ReturnSize
+		PEPROCESS,
+		PVOID,
+		PEPROCESS,
+		PVOID,
+		SIZE_T,
+		KPROCESSOR_MODE,
+		PSIZE_T
 	);
 }
 
 namespace memory {
-    NTSTATUS attach(HANDLE pid);
-    NTSTATUS read(kmd::request* req);
-    NTSTATUS write(kmd::request* req);
+	void cleanup();
+
+    NTSTATUS attach(HANDLE);
+    NTSTATUS read(kmd::request*);
+    NTSTATUS write(kmd::request*);
 }

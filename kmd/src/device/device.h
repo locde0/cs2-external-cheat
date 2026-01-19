@@ -2,6 +2,6 @@
 #include <ntifs.h>
 
 namespace device {
-    NTSTATUS create(PDRIVER_OBJECT driver_object);
-    void destroy(PDRIVER_OBJECT driver_object);
+    NTSTATUS create(PDRIVER_OBJECT);
+    void destroy(PDRIVER_OBJECT);
 }

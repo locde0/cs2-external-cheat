@@ -1,34 +1,42 @@
 #include "dispatch.h"
-#include "../memory/memory.h"
 
 namespace dispatch {
 
-    NTSTATUS create(PDEVICE_OBJECT, PIRP irp) {
-        irp->IoStatus.Status = STATUS_SUCCESS;
-        irp->IoStatus.Information = 0;
+    constexpr SIZE_T MAX_COPY = 1ull << 20;
+
+    static NTSTATUS complete(PIRP irp, NTSTATUS status, ULONG_PTR info) {
+        irp->IoStatus.Status = status;
+        irp->IoStatus.Information = info;
         IoCompleteRequest(irp, IO_NO_INCREMENT);
-        return STATUS_SUCCESS;
+        return status;
+    }
+
+    NTSTATUS create(PDEVICE_OBJECT, PIRP irp) {
+		return complete(irp, STATUS_SUCCESS, 0);
     }
 
     NTSTATUS close(PDEVICE_OBJECT, PIRP irp) {
-        irp->IoStatus.Status = STATUS_SUCCESS;
-        irp->IoStatus.Information = 0;
-        IoCompleteRequest(irp, IO_NO_INCREMENT);
-        return STATUS_SUCCESS;
+        return complete(irp, STATUS_SUCCESS, 0);
     }
 
     NTSTATUS device_control(PDEVICE_OBJECT, PIRP irp) {
         auto stack = IoGetCurrentIrpStackLocation(irp);
+        if (!stack || !irp->AssociatedIrp.SystemBuffer)
+            return complete(irp, STATUS_INVALID_PARAMETER, 0);
+
+        auto inLen = stack->Parameters.DeviceIoControl.InputBufferLength;
+        auto outLen = stack->Parameters.DeviceIoControl.OutputBufferLength;
+        if (inLen < sizeof(kmd::request) || outLen < sizeof(kmd::request))
+            return complete(irp, STATUS_BUFFER_TOO_SMALL, 0);
+
         auto req = reinterpret_cast<kmd::request*>(irp->AssociatedIrp.SystemBuffer);
+        if (!req)
+            return complete(irp, STATUS_INVALID_PARAMETER, 0);
 
         NTSTATUS status = STATUS_INVALID_DEVICE_REQUEST;
+        const auto code = static_cast<kmd::ioctl>(stack->Parameters.DeviceIoControl.IoControlCode);
 
-        if (!stack || !req) {
-            IoCompleteRequest(irp, IO_NO_INCREMENT);
-            return status;
-        }
-
-        switch ((kmd::ioctl)stack->Parameters.DeviceIoControl.IoControlCode) {
+        switch (code) {
         case kmd::ioctl::attach:
             status = memory::attach(req->process_id);
             break;
@@ -45,9 +53,7 @@ namespace dispatch {
             break;
         }
 
-        irp->IoStatus.Status = status;
-        irp->IoStatus.Information = sizeof(kmd::request);
-        IoCompleteRequest(irp, IO_NO_INCREMENT);
-        return status;
+        ULONG_PTR info = NT_SUCCESS(status) ? sizeof(kmd::request) : 0;
+        return complete(irp, status, info);
     }
 }

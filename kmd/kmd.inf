@@ -1,63 +1,47 @@
-;
 ; kmd.inf
-;
 
 [Version]
-Signature   = "$WINDOWS NT$"
-Class       = System
-ClassGuid   = {4d36e97d-e325-11ce-bfc1-08002be10318}
-Provider    = %ManufacturerName%
-CatalogFile = kmd.cat
-DriverVer   = 01/17/2026,1.0.0.0
-PnpLockdown = 1
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%Mfg%
+DriverVer=01/19/2026,0.1.0.0
+CatalogFile=kmd.cat
+PnpLockdown=1
 
 [DestinationDirs]
-DefaultDestDir = 13
-File_Copy      = 13
+DefaultDestDir = 12
 
 [SourceDisksNames]
 1 = %DiskName%,,,""
 
 [SourceDisksFiles]
-kmd.sys = 1,,
-
-;*****************************************
-; Install Section
-;*****************************************
+kmd.sys = 1
 
 [Manufacturer]
-%ManufacturerName% = Standard,NTamd64.10.0...16299
+%Mfg% = Standard,NTamd64
 
-[Standard.NTamd64.10.0...16299]
-%kmd.DeviceDesc% = kmd_Device, Root\kmd
+[Standard.NTamd64]
+%DevDesc% = Install, Root\KMD
 
-[kmd_Device.NT]
-CopyFiles = File_Copy
+[Install]
+CopyFiles = DriverCopyFiles
 
-[File_Copy]
+[DriverCopyFiles]
 kmd.sys
 
-;-------------- Service installation
-[kmd_Device.NT.Services]
-AddService = kmd,%SPSVCINST_ASSOCSERVICE%, kmd_Service_Inst
+[Install.Services]
+AddService = kmd,0x00000002,Service_Inst
 
-; -------------- kmd driver install sections
-[kmd_Service_Inst]
-DisplayName    = %kmd.SVCDESC%
-ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
-StartType      = 3               ; SERVICE_DEMAND_START
-ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
-ServiceBinary  = %13%\kmd.sys
-
-[kmd_Device.NT.Wdf]
-KmdfService = kmd, kmd_wdfsect
-
-[kmd_wdfsect]
-KmdfLibraryVersion = $KMDFVERSION$
+[Service_Inst]
+DisplayName   = %SvcDesc%
+ServiceType   = 1
+StartType     = 3
+ErrorControl  = 1
+ServiceBinary = %12%\kmd.sys
 
 [Strings]
-SPSVCINST_ASSOCSERVICE = 0x00000002
-ManufacturerName = "locde0"
-DiskName = "kmd Installation Disk"
-kmd.DeviceDesc = "kmd Kernel Device"
-kmd.SVCDESC = "kmd Kernel Driver"
+Mfg      = "locde0"
+DevDesc  = "kmd Root Device"
+SvcDesc  = "kmd Driver"
+DiskName = "kmd Source Disk"

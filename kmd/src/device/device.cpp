@@ -8,6 +8,7 @@ namespace device {
         RtlInitUnicodeString(&sym, KMD_SYMLINK);
         IoDeleteSymbolicLink(&sym);
 
+        memory::cleanup();
         if (driver_object->DeviceObject)
             IoDeleteDevice(driver_object->DeviceObject);
     }
