@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "../gfx/renderer.h"
 #include "../platform/overlay.h"
+#include "../platform/window.h"
 #include "../render/draw.h"
 #include "../domain/facade.h"
 #include "../driver/driver.h"

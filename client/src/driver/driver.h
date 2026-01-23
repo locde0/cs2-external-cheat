@@ -1,15 +1,13 @@
 #pragma once
-#include <Windows.h>
 #include <string>
-#include <iostream>
+#include "process.h"
+#include "../core/scoped.h"
 #include <ioctls.h>
-#include <TlHelp32.h>
 
 namespace driver {
 	class Driver {
 	public:
 		explicit Driver(const std::wstring, const std::wstring);
-		~Driver();
 
 		Driver(const Driver&) = delete;
 		Driver& operator=(const Driver&) = delete;
@@ -21,10 +19,10 @@ namespace driver {
 		uintptr_t b_addr() const { return _b_addr; }
 
 		template <typename T>
-		T read(const std::uintptr_t addr);
+		T read(const std::uintptr_t);
 
 		template <typename T>
-		void write(const std::uintptr_t addr, const T& value);
+		void write(const std::uintptr_t, const T&);
 
 	private:
 		bool exists();
@@ -35,7 +33,7 @@ namespace driver {
 		std::wstring _path;
 		uintptr_t _b_addr = 0;
 		DWORD _pid = 0;
-		HANDLE _device = INVALID_HANDLE_VALUE;
+		core::ScopedHandle _device;
 	};
 
 	template <typename T>
@@ -48,7 +46,7 @@ namespace driver {
 		r.size = sizeof(T);
 
 		DeviceIoControl(
-			_device,
+			_device.get(),
 			kmd::ioctl::read,
 			&r, sizeof(r), &r, sizeof(r),
 			nullptr, nullptr
@@ -65,7 +63,7 @@ namespace driver {
 		r.size = sizeof(T);
 
 		DeviceIoControl(
-			_device,
+			_device.get(),
 			kmd::ioctl::write,
 			&r, sizeof(r), &r, sizeof(r),
 			nullptr, nullptr
