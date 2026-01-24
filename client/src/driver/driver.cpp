@@ -1,6 +1,7 @@
 #include "driver.h"
 
 namespace driver {
+
 	Driver::Driver(const std::wstring name, const std::wstring path)
 		: _name(name), _path(path)
 	{}
@@ -23,11 +24,11 @@ namespace driver {
 	}
 
 	bool Driver::attach(const wchar_t* p_name, const wchar_t* m_name) {
-		_pid = driver::findPId(p_name);
+		_pid = driver::findPid(p_name);
 		if (!_pid) return false;
 
 		if (m_name != nullptr)
-			_b_addr = driver::findMBase(_pid, m_name);
+			_b_addr = driver::findModuleBase(_pid, m_name);
 
 		kmd::request req{};
 		req.process_id = reinterpret_cast<HANDLE>(static_cast<uintptr_t>(_pid));
@@ -41,19 +42,19 @@ namespace driver {
 	}
 
 	bool Driver::exists() {
-		core::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
+		core::scoped::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
 		if (!scm) return false;
 
-		core::ScopedScHandle svc(OpenServiceW(scm.get(), _name.c_str(), SERVICE_QUERY_STATUS));
+		core::scoped::ScopedScHandle svc(OpenServiceW(scm.get(), _name.c_str(), SERVICE_QUERY_STATUS));
 
 		return svc;
 	}
 
 	bool Driver::create() {
-		core::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE));
+		core::scoped::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE));
 		if (!scm) return false;
 
-		core::ScopedScHandle svc(CreateServiceW(
+		core::scoped::ScopedScHandle svc(CreateServiceW(
 			scm.get(),
 			_name.c_str(),
 			_name.c_str(),
@@ -72,10 +73,10 @@ namespace driver {
 	}
 	
 	bool Driver::start() {
-		core::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
+		core::scoped::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
 		if (!scm) return false;
 
-		core::ScopedScHandle svc(OpenServiceW(scm.get(), _name.c_str(), SERVICE_START));
+		core::scoped::ScopedScHandle svc(OpenServiceW(scm.get(), _name.c_str(), SERVICE_START));
 		if (!svc) return false;
 
 		return StartServiceW(svc.get(), 0, nullptr) || GetLastError() == ERROR_SERVICE_ALREADY_RUNNING;

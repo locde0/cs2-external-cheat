@@ -1,31 +1,20 @@
 #pragma once
-#include <cstdint>
 #include <vector>
+#include "../core/types.h"
 
 namespace render {
-	
-	struct Vec2 {
-		float x, y;
-	};
-
-	struct Color {
-		float r, g, b, a;
-	};
-
-	struct Rect {
-		float x, y, w, h;
-	};
 
 	struct RectCmd {
-		Rect rect;
-		Color color;
+		core::Rect rect;
+		core::Color color;
 	};
 
 	class DrawList {
 	public:
 		void clear();
-		void add(Rect, Color);
+		void add(const core::Rect&, const core::Color&);
 		const std::vector<RectCmd>& rects() const { return _rects; }
+		bool empty() const { return _rects.empty(); }
 
 	private:
 		std::vector<RectCmd> _rects;

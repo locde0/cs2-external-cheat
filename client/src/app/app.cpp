@@ -1,54 +1,31 @@
 #include "app.h"
-
-namespace {
-
-    std::wstring getDir() {
-        wchar_t buf[MAX_PATH];
-        DWORD n = GetModuleFileNameW(nullptr, buf, MAX_PATH);
-        if (n == 0 || n == MAX_PATH) return L"";
-        return std::filesystem::path(buf).parent_path().wstring();
-    }
-
-    std::wstring makeFullPath(const std::wstring& filename) {
-        std::filesystem::path path = std::filesystem::path(getDir()) / filename;
-        return path.lexically_normal().wstring();
-    }
-
-}
+#include "../platform/window.h"
+#include "../core/path/path.h"
 
 namespace app {
     App::App() 
-        : _driver(L"kmd", makeFullPath(L"kmd.sys")) 
+        : _driver(L"kmd", core::path::makeFullPath(L"kmd.sys"))
     {}
 
-    bool App::initDriver() {
-        try {
-            return _driver.init();
-        }
-        catch (...) { 
-            return false; 
-        }
-    }
-
     bool App::ensureConnection() {
-        if (_is_attached && _t_hwnd) {
-            if (!IsWindow(_t_hwnd)) {
-                resetConnection();
-                return false;
-            }
+        if (_is_attached && _target.isValid())
             return true;
+
+        if (_is_attached) {
+            resetConnection();
+            return false;
         }
 
-        static ULONGLONG lastCheckTime = 0;
-        ULONGLONG now = GetTickCount64();
-        if (now - lastCheckTime < 1000)
+        static auto l_time = std::chrono::steady_clock::time_point{};
+        auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - l_time).count() < 1000)
             return false;
-        lastCheckTime = now;
+
+        l_time = now;
 
         if (_driver.attach(L"notepad.exe", L"client.dll")) {
             if (resolve()) {
                 _is_attached = true;
-                ShowWindow(_overlay.handle(), SW_SHOWNA);
                 return true;
             }
         }
@@ -57,85 +34,49 @@ namespace app {
 
     void App::resetConnection() {
         _is_attached = false;
-        _t_hwnd = nullptr;
-        
-        if (_overlay.handle())
-            ShowWindow(_overlay.handle(), SW_HIDE);
+        _target.reset();
+        _overlay.hide();
     }
 
     bool App::resolve() {
-        _t_hwnd = platform::findMainWindow(_driver.pid());
-        return _t_hwnd != nullptr;
-    }
-
-    bool App::updateWindowSync(bool wf) {
-        if (!_t_hwnd || !IsWindow(_t_hwnd)) return false;
-
-        platform::WindowInfo wi;
-		if (!platform::queryWindowInfo(_t_hwnd, wi)) 
-            return false;
-
-        if (wi.minimized) {
-            ShowWindow(_overlay.handle(), SW_HIDE);
-            return true;
-        }
-        
-        ShowWindow(_overlay.handle(), SW_SHOWNA);
-
-        HWND insertAfter = platform::calcInsertAfter(_t_hwnd, _overlay.handle(), wi.topmost);
-        int w = wi.bounds.right - wi.bounds.left;
-        int h = wi.bounds.bottom - wi.bounds.top;
-
-        SetWindowPos(
-            _overlay.handle(),
-            insertAfter,
-            wi.bounds.left, wi.bounds.top, w, h,
-            SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_ASYNCWINDOWPOS
-        );
-
-        return true;
+        return _target.find(_driver.pid());
     }
 
     int App::run() {
-        SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        platform::enableDpiAwareness();
 
-        if (!initDriver())
+        if (!_driver.init())
 			throw std::runtime_error("failed to init driver");
 
-        if (!_overlay.create(L"overlay", 1, 1))
+        if (!_overlay.create(L"overlay", { 1, 1 }))
             throw std::runtime_error("failed to create overlay window");
 
-        ShowWindow(_overlay.handle(), SW_HIDE);
-
-        auto cs = _overlay.size();
-        _renderer.init(_overlay.handle(), cs.w, cs.h);
+        _renderer.init(_overlay.handle(), _overlay.size());
 
         while (_overlay.running()) {
             _overlay.pumpMsgs();
 
-            platform::Size newSize{};
-            if (_overlay.resize(newSize)) {
-                _renderer.resize(newSize.w, newSize.h);
-            }
+            core::Extent size;
+            if (_overlay.resize(size))
+                _renderer.resize(size);
 
             if (!ensureConnection()) {
                 Sleep(50);
                 continue;
             }
 
-            if (!updateWindowSync(true)) {
+            if (!_overlay.attach(_target)) {
                 resetConnection();
                 continue;
             }
 
             _facade.update();
 
-            auto cur = _overlay.size();
             _draw.clear();
-            _facade.build(_draw, cur.w, cur.h);
+            _facade.build(_draw, _overlay.size());
 
             _renderer.begin();
-            _renderer.draw(_draw, cur.w, cur.h);
+            _renderer.draw(_draw);
             _renderer.end();
         }
 

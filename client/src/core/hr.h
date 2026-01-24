@@ -1,7 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <string>
-#include <Windows.h>
+#include "win.h"
 
 inline void throwIfFailed(HRESULT hr, const char* what) {
     if (FAILED(hr)) {

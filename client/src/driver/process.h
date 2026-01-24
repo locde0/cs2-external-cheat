@@ -1,9 +1,10 @@
 #pragma once
-#include <Windows.h>
-#include <TlHelp32.h>
-#include <iostream>
+#include <cstdint>
+#include "../core/win.h"
 
 namespace driver {
-    DWORD findPId(const wchar_t*);
-    std::uintptr_t findMBase(DWORD, const wchar_t*);
+
+    DWORD findPid(const wchar_t*);
+    std::uintptr_t findModuleBase(DWORD, const wchar_t*);
+
 }

@@ -1,6 +1,9 @@
 #pragma once
-#include "Windows.h"
-#include "../render/draw.h"
+#include "../core/types.h"
+
+namespace render { 
+	class DrawList; 
+}
 
 namespace domain {
 
@@ -11,7 +14,7 @@ namespace domain {
 	class Facade {
 	public:
 		void update();
-		void build(render::DrawList&, int, int);
+		void build(render::DrawList&, const core::Extent&);
 	};
 
 }

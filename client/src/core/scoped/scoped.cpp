@@ -1,6 +1,6 @@
 #include "scoped.h"
 
-namespace core {
+namespace core::scoped {
 
     ScopedHandle::ScopedHandle(HANDLE h)
         : _h(h)

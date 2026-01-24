@@ -1,4 +1,12 @@
 #pragma once
+
+#if defined(_KERNEL_MODE) 
+    #include <ntddk.h>
+#else
+    #include <Windows.h>
+    #include <winioctl.h>
+#endif
+
 #define KMD_DEVICE_NAME L"\\\\.\\kmd"
 #define KMD_NT_DEVICE L"\\Device\\kmd"
 #define KMD_SYMLINK L"\\DosDevices\\kmd"
@@ -20,4 +28,5 @@ namespace kmd {
         SIZE_T size;
         SIZE_T transferred;
     };
+
 }

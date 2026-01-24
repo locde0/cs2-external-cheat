@@ -1,23 +1,24 @@
 #pragma once
-#include "Windows.h"
+#include "../core/win.h"
 #include <cstdint>
+#include "../core/types.h"
+#include "window.h"
+#include "target.h"
 
 namespace platform {
 
-	struct Size {
-		int w, h;
-	};
-
 	class Overlay {
 	public:
-		bool create(const wchar_t*, int, int);
+		bool create(const wchar_t*, const core::Extent&);
 		void pumpMsgs();
-		bool running() const { return _running; }
+
+		bool resize(core::Extent&);
+		bool attach(const Target&);
+		void hide();
 
 		HWND handle() const { return _hwnd; }
-		Size size() const { return _size; }
-
-		bool resize(Size&);
+		core::Extent size() const { return _size; }
+		bool running() const { return _running; }
 
 	private:
 		static LRESULT CALLBACK wndProcSetup(HWND, UINT, WPARAM, LPARAM);
@@ -28,7 +29,7 @@ namespace platform {
 
 		HWND _hwnd = nullptr;
 		bool _running = true;
-		Size _size{};
+		core::Extent _size{};
 		bool _resized = false;
 	};
 

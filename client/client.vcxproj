@@ -139,25 +139,31 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\app\app.cpp" />
-    <ClCompile Include="src\core\scoped.cpp" />
+    <ClCompile Include="src\core\path\path.cpp" />
+    <ClCompile Include="src\core\scoped\scoped.cpp" />
     <ClCompile Include="src\domain\facade.cpp" />
     <ClCompile Include="src\driver\driver.cpp" />
     <ClCompile Include="src\driver\process.cpp" />
     <ClCompile Include="src\gfx\renderer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\platform\overlay.cpp" />
+    <ClCompile Include="src\platform\target.cpp" />
     <ClCompile Include="src\platform\window.cpp" />
     <ClCompile Include="src\render\draw.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\app.h" />
     <ClInclude Include="src\core\hr.h" />
-    <ClInclude Include="src\core\scoped.h" />
+    <ClInclude Include="src\core\path\path.h" />
+    <ClInclude Include="src\core\scoped\scoped.h" />
+    <ClInclude Include="src\core\types.h" />
+    <ClInclude Include="src\core\win.h" />
     <ClInclude Include="src\domain\facade.h" />
     <ClInclude Include="src\driver\driver.h" />
     <ClInclude Include="src\driver\process.h" />
     <ClInclude Include="src\gfx\renderer.h" />
     <ClInclude Include="src\platform\overlay.h" />
+    <ClInclude Include="src\platform\target.h" />
     <ClInclude Include="src\platform\window.h" />
     <ClInclude Include="src\render\draw.h" />
   </ItemGroup>

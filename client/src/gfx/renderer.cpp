@@ -1,4 +1,18 @@
 #include "renderer.h"
+#include <string>
+#include <stdexcept>
+#include <d3d11.h>
+#include <dxgi1_2.h>
+#include <d3dcompiler.h>
+#include <dcomp.h>
+
+#include "../render/draw.h"
+#include "../core/hr.h"
+
+#pragma comment(lib, "dcomp.lib")
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 namespace gfx {
 
@@ -16,9 +30,11 @@ namespace gfx {
         return blob;
     }
 
-    bool Renderer::init(HWND hwnd, int w, int h) {
-        _width = w;
-        _height = h;
+    Renderer::Renderer() = default;
+    Renderer::~Renderer() = default;
+
+    bool Renderer::init(HWND hwnd, const core::Extent& extent) {
+        _size = extent;
 
         UINT deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
@@ -50,8 +66,8 @@ namespace gfx {
         );
 
         DXGI_SWAP_CHAIN_DESC1 desc{};
-        desc.Width = (UINT)w;
-        desc.Height = (UINT)h;
+        desc.Width = (UINT)_size.w;
+        desc.Height = (UINT)_size.h;
         desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         desc.BufferCount = 2;
         desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -93,22 +109,18 @@ namespace gfx {
         return true;
     }
 
-    void Renderer::resize(int w, int h) {
+    void Renderer::resize(const core::Extent& extent) {
         if (!_swap) return;
-        if (w <= 0 || h <= 0) return;
+        if (extent.w <= 0 || extent.h <= 0) return;
 
-        _width = w; 
-        _height = h;
+        _size = extent;
         _rtv.Reset();
 
-        throwIfFailed(_swap->ResizeBuffers(0, (UINT)w, (UINT)h, DXGI_FORMAT_UNKNOWN, 0), "ResizeBuffers");
+        throwIfFailed(_swap->ResizeBuffers(0, (UINT)_size.w, (UINT)_size.h, DXGI_FORMAT_UNKNOWN, 0), "ResizeBuffers");
         createRTV();
 
-        float clear[4] = { 0.f, 0.f, 0.f, 0.f };
-        _ctx->OMSetRenderTargets(1, _rtv.GetAddressOf(), nullptr);
-        _ctx->ClearRenderTargetView(_rtv.Get(), clear);
-        _swap->Present(1, 0);
-        if (_dcompDevice) _dcompDevice->Commit();
+        bindAndClear();
+        end();
     }
 
     void Renderer::createRTV() {
@@ -138,8 +150,8 @@ namespace gfx {
         throwIfFailed(_dev->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &_ps), "CreatePS");
 
         D3D11_INPUT_ELEMENT_DESC layout[] = {
-            { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         };
         throwIfFailed(_dev->CreateInputLayout(layout, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &_il), "CreateInputLayout");
 
@@ -156,14 +168,18 @@ namespace gfx {
         throwIfFailed(_dev->CreateBlendState(&bd, &_blend), "CreateBlendState");
     }
 
-    void Renderer::begin() {
-        float clear[4] = { 0.f, 0.f, 0.f, 0.f };
+    void Renderer::bindAndClear() {
+        core::Color clear = core::Color::transparent();
         _ctx->OMSetRenderTargets(1, _rtv.GetAddressOf(), nullptr);
-        _ctx->ClearRenderTargetView(_rtv.Get(), clear);
+        _ctx->ClearRenderTargetView(_rtv.Get(), reinterpret_cast<const float*>(&clear));
+    }
+
+    void Renderer::begin() {
+        bindAndClear();
 
         D3D11_VIEWPORT vp{};
-        vp.Width = (float)_width;
-        vp.Height = (float)_height;
+        vp.Width = (float)_size.w;
+        vp.Height = (float)_size.h;
         vp.MinDepth = 0.f;
         vp.MaxDepth = 1.f;
         _ctx->RSSetViewports(1, &vp);
@@ -176,10 +192,14 @@ namespace gfx {
         _ctx->OMSetBlendState(_blend.Get(), blendFactor, 0xFFFFFFFF);
     }
 
-    static inline float PxToNdcX(float x, float w) { return (2.f * x / w) - 1.f; }
-    static inline float PxToNdcY(float y, float h) { return 1.f - (2.f * y / h); }
+    inline core::Vec2 pxToNdc(const core::Vec2& p, const core::Extent& size) {
+        return {
+            (2.f * p.x / (float)size.w) - 1.f,
+            1.f - (2.f * p.y / (float)size.h)
+        };
+    }
 
-    void Renderer::draw(const render::DrawList& list, int w, int h) {
+    void Renderer::draw(const render::DrawList& list) {
         const auto& rects = list.rects();
         const UINT needed = (UINT)rects.size() * 6;
         if (needed == 0) return;
@@ -202,25 +222,19 @@ namespace gfx {
         auto* out = (Vtx*)ms.pData;
 
         for (const auto& cmd : rects) {
-            float x0 = cmd.rect.x;
-            float y0 = cmd.rect.y;
-            float x1 = cmd.rect.x + cmd.rect.w;
-            float y1 = cmd.rect.y + cmd.rect.h;
+			core::Vec2 v_lt = { cmd.rect.x, cmd.rect.y };
+			core::Vec2 v_rb = { cmd.rect.x + cmd.rect.w, cmd.rect.y + cmd.rect.h };
 
-            float l = PxToNdcX(x0, (float)w);
-            float r = PxToNdcX(x1, (float)w);
-            float t = PxToNdcY(y0, (float)h);
-            float b = PxToNdcY(y1, (float)h);
+            core::Vec2 ndc_lt = pxToNdc(v_lt, _size);
+            core::Vec2 ndc_rb = pxToNdc(v_rb, _size);
 
-            const auto c = cmd.color;
+            *out++ = { ndc_lt, cmd.color };
+            *out++ = { { ndc_rb.x, ndc_lt.y }, cmd.color };
+            *out++ = { ndc_rb, cmd.color };
 
-            *out++ = { l, t, c.r, c.g, c.b, c.a };
-            *out++ = { r, t, c.r, c.g, c.b, c.a };
-            *out++ = { r, b, c.r, c.g, c.b, c.a };
-
-            *out++ = { l, t, c.r, c.g, c.b, c.a };
-            *out++ = { r, b, c.r, c.g, c.b, c.a };
-            *out++ = { l, b, c.r, c.g, c.b, c.a };
+            *out++ = { ndc_lt, cmd.color };
+            *out++ = { ndc_rb, cmd.color };
+            *out++ = { { ndc_lt.x, ndc_rb.y }, cmd.color };
         }
 
         _ctx->Unmap(_vb.Get(), 0);

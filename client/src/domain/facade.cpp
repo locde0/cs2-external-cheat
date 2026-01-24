@@ -1,15 +1,21 @@
 #include "facade.h"
+#include "../core/win.h"
+#include "../render/draw.h"
 
 namespace domain {
+
 	void Facade::update() {
 
 	}
 
-	void Facade::build(render::DrawList& out, int w, int h) {
+	void Facade::build(render::DrawList& out, const core::Extent& size) {
 		const float t = float(GetTickCount64() % 2000) / 2000.0f;
-		const float x = 50.0f + t * (w - 200.0f);
 
-		out.add({ x, 60.0f, 150.0f, 150.0f }, { 1.0f, 0.0f, 0.0f, 0.80f });
-		out.add({ 60.0f, 240.0f, 220.0f, 90.0f }, { 0.0f, 1.0f, 0.0f, 0.60f });
+		core::Vec2 pos0{ 50.f + t * (size.w - 200.f), 60.f };
+		core::Vec2 size0{ 150.f, 150.f };
+
+		out.add(core::Rect{ pos0.x, pos0.y, size0.x, size0.y }, core::Color::red());
+		out.add({ 60.0f, 240.0f, 220.0f, 90.0f }, core::Color::green());
 	}
+
 }

@@ -1,8 +1,10 @@
 #include "process.h"
+#include <TlHelp32.h>
+#include <cwchar>
 
 namespace driver {
 
-	DWORD findPId(const wchar_t* p_name) {
+	DWORD findPid(const wchar_t* p_name) {
 		DWORD pid = 0;
 
 		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
@@ -29,7 +31,7 @@ namespace driver {
 		return pid;
 	}
 
-	std::uintptr_t findMBase(DWORD pid, const wchar_t* m_name) {
+	std::uintptr_t findModuleBase(DWORD pid, const wchar_t* m_name) {
 		std::uintptr_t base = 0;
 
 		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);

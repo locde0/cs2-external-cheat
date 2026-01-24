@@ -2,40 +2,34 @@
 
 namespace platform {
 
-    bool Overlay::create(const wchar_t* title, int w, int h) {
+    bool Overlay::create(const wchar_t* title, const core::Extent& extent) {
         WNDCLASSEXW wc{};
         wc.cbSize = sizeof(wc);
-        wc.lpfnWndProc = &Overlay::wndProcSetup;
+        wc.lpfnWndProc = wndProcSetup;
         wc.hInstance = GetModuleHandleW(nullptr);
         wc.lpszClassName = L"overlay";
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-        wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
+        wc.hbrBackground = nullptr;
 
         RegisterClassExW(&wc);
 
-        DWORD style = WS_POPUP;
         DWORD exStyle = WS_EX_LAYERED |
             WS_EX_TRANSPARENT |
+            WS_EX_TOPMOST |
             WS_EX_TOOLWINDOW |
             WS_EX_NOACTIVATE |
             WS_EX_NOREDIRECTIONBITMAP;
 
         _hwnd = CreateWindowExW(
             exStyle, wc.lpszClassName, title,
-            style,
-            0, 0,
-            w, h,
+            WS_POPUP,
+            0, 0, extent.w, extent.h,
             nullptr, nullptr, wc.hInstance, this
         );
 
         if (!_hwnd) return false;
 
-        SetLayeredWindowAttributes(_hwnd, 0, 255, LWA_ALPHA);
-        SetWindowPos(
-            _hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-            SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW
-        );
-        ShowWindow(_hwnd, SW_SHOWNA);
+        ShowWindow(_hwnd, SW_HIDE);
 
         updateSize();
         return true;
@@ -49,7 +43,40 @@ namespace platform {
 		}
     }
 
-    bool Overlay::resize(Size& out) {
+    bool Overlay::attach(const Target& target) {
+        HWND t_hwnd = static_cast<HWND>(target.handle());
+
+        if (!t_hwnd || !IsWindow(t_hwnd)) return false;
+
+        WindowInfo wi;
+        if (!queryWindowInfo(t_hwnd, wi))
+            return false;
+
+        if (wi.minimized) {
+            hide();
+            return true;
+        }
+
+        ShowWindow(_hwnd, SW_SHOWNA);
+
+        HWND insertAfter = platform::calcInsertAfter(t_hwnd, _hwnd, wi.topmost);
+
+        SetWindowPos(
+            _hwnd,
+            insertAfter,
+            wi.bounds.left, wi.bounds.top, wi.size.w, wi.size.h,
+            SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_ASYNCWINDOWPOS
+        );
+
+        return true;
+    }
+
+    void Overlay::hide() {
+        if (_hwnd && IsWindowVisible(_hwnd))
+            ShowWindow(_hwnd, SW_HIDE);
+    }
+
+    bool Overlay::resize(core::Extent& out) {
 		if (!_resized) return false;
 		_resized = false;
         out = _size;
@@ -60,15 +87,15 @@ namespace platform {
         RECT rect{};
         GetClientRect(_hwnd, &rect);
         _size.w = rect.right - rect.left;
-        _size.h= rect.bottom - rect.top;
+        _size.h = rect.bottom - rect.top;
 	}
 
     LRESULT CALLBACK Overlay::wndProcSetup(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         if (msg == WM_NCCREATE) {
             auto cs = reinterpret_cast<CREATESTRUCTW*>(lp);
             auto self = reinterpret_cast<Overlay*>(cs->lpCreateParams);
-            SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)self);
-            SetWindowLongPtrW(hwnd, GWLP_WNDPROC, (LONG_PTR)&Overlay::wndProcThunk);
+            SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+            SetWindowLongPtrW(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(wndProcThunk));
             self->_hwnd = hwnd;
             return self->wndProc(hwnd, msg, wp, lp);
         }
@@ -82,26 +109,20 @@ namespace platform {
 
     LRESULT Overlay::wndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         switch (msg) {
-        case WM_PAINT:
-            ValidateRect(hwnd, nullptr);
-            return 0;
-        case WM_NCHITTEST:
-            return HTTRANSPARENT;
-
-        case WM_MOUSEACTIVATE:
-            return MA_NOACTIVATE;
-
-        case WM_ERASEBKGND:
-            return 1;
-
         case WM_SIZE:
             updateSize();
             _resized = true;
             return 0;
 
-        case WM_CLOSE:
-            DestroyWindow(hwnd);
+        case WM_PAINT:
+            ValidateRect(hwnd, nullptr);
             return 0;
+
+        case WM_NCHITTEST:
+            return HTTRANSPARENT;
+
+        case WM_ERASEBKGND:
+            return 1;
 
         case WM_DESTROY:
             _running = false;
@@ -110,4 +131,5 @@ namespace platform {
         }
         return DefWindowProcW(hwnd, msg, wp, lp);
     }
+
 }

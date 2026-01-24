@@ -1,4 +1,8 @@
+#include <dwmapi.h>
+#include <vector>
 #include "window.h"
+
+#pragma comment(lib, "dwmapi.lib")
 
 namespace {
 
@@ -45,8 +49,13 @@ namespace platform {
         if (!getWindowBounds(hwnd, out.bounds)) return false;
 
         out.minimized = IsIconic(hwnd) != 0;
+        out.size = { out.bounds.right - out.bounds.left, out.bounds.bottom - out.bounds.top };
         out.topmost = (GetWindowLongW(hwnd, GWL_EXSTYLE) & WS_EX_TOPMOST) != 0;
         return true;
+    }
+
+    bool isWindowValid(HWND hwnd) {
+        return IsWindow(hwnd);
     }
 
     HWND calcInsertAfter(HWND target, HWND overlay, bool isTopmost) {

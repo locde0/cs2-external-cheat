@@ -1,10 +1,12 @@
 #pragma once
 #include <string>
 #include "process.h"
-#include "../core/scoped.h"
+#include "../core/scoped/scoped.h"
+#include "../core/win.h"
 #include <ioctls.h>
 
 namespace driver {
+
 	class Driver {
 	public:
 		explicit Driver(const std::wstring, const std::wstring);
@@ -33,7 +35,7 @@ namespace driver {
 		std::wstring _path;
 		uintptr_t _b_addr = 0;
 		DWORD _pid = 0;
-		core::ScopedHandle _device;
+		core::scoped::ScopedHandle _device;
 	};
 
 	template <typename T>

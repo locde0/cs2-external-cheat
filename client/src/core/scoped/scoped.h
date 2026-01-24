@@ -1,7 +1,7 @@
 #pragma once
-#include <Windows.h>
+#include "../win.h"
 
-namespace core {
+namespace core::scoped {
 
     class ScopedHandle {
     public:

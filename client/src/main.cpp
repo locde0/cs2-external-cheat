@@ -1,4 +1,6 @@
-#include <iostream>
+#include <cstdlib>
+#include <exception>
+#include "core/win.h"
 #include "app/app.h"
 
 int WINAPI main(HINSTANCE, HINSTANCE, PWSTR, int) {
