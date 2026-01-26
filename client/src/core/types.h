@@ -14,8 +14,13 @@ namespace core {
     struct Color {
         float r, g, b, a;
 
-        static const Color red() { return { 1.f, 0.f, 0.f, 0.8f }; }
-        static const Color green() { return { 0.f, 1.f, 0.f, 0.8f }; }
+        static const Color red() { return { 1.f, 0.f, 0.f, 1.f }; }
+        static const Color green() { return { 0.f, 1.f, 0.f, 1.f }; }
+        static const Color blue() { return { 0.f, 0.f, 1.f, 1.f }; }
+
+        static const Color white() { return { 1.f, 1.f, 1.f, 1.f }; }
+        static const Color black() { return { 0.f, 0.f, 0.f, 1.f }; }
+
         static const Color transparent() { return { 0.f, 0.f, 0.f, 0.f }; }
     };
 

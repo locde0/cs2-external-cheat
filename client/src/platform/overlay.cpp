@@ -7,7 +7,7 @@ namespace platform {
         wc.cbSize = sizeof(wc);
         wc.lpfnWndProc = wndProcSetup;
         wc.hInstance = GetModuleHandleW(nullptr);
-        wc.lpszClassName = L"overlay";
+        wc.lpszClassName = title;
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wc.hbrBackground = nullptr;
 

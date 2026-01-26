@@ -139,9 +139,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\app\app.cpp" />
+    <ClCompile Include="src\core\config\config.cpp" />
     <ClCompile Include="src\core\path\path.cpp" />
     <ClCompile Include="src\core\scoped\scoped.cpp" />
     <ClCompile Include="src\domain\facade.cpp" />
+    <ClCompile Include="src\domain\features\esp\esp.cpp" />
+    <ClCompile Include="src\domain\game\context.cpp" />
+    <ClCompile Include="src\domain\game\offsets\offsets.cpp" />
+    <ClCompile Include="src\domain\math\math.cpp" />
     <ClCompile Include="src\driver\driver.cpp" />
     <ClCompile Include="src\driver\process.cpp" />
     <ClCompile Include="src\gfx\renderer.cpp" />
@@ -153,12 +158,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\app\app.h" />
+    <ClInclude Include="src\core\config\config.h" />
     <ClInclude Include="src\core\hr.h" />
     <ClInclude Include="src\core\path\path.h" />
     <ClInclude Include="src\core\scoped\scoped.h" />
     <ClInclude Include="src\core\types.h" />
     <ClInclude Include="src\core\win.h" />
     <ClInclude Include="src\domain\facade.h" />
+    <ClInclude Include="src\domain\features\esp\esp.h" />
+    <ClInclude Include="src\domain\game\context.h" />
+    <ClInclude Include="src\domain\game\offsets\offsets.h" />
+    <ClInclude Include="src\domain\game\schemes.h" />
+    <ClInclude Include="src\domain\math\math.h" />
     <ClInclude Include="src\driver\driver.h" />
     <ClInclude Include="src\driver\process.h" />
     <ClInclude Include="src\gfx\renderer.h" />
@@ -167,7 +178,17 @@
     <ClInclude Include="src\platform\window.h" />
     <ClInclude Include="src\render\draw.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets" Condition="Exists('..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nlohmann.json.3.12.0\build\native\nlohmann.json.targets'))" />
+  </Target>
 </Project>

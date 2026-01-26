@@ -5,10 +5,13 @@
 namespace domain {
 
 	void Facade::update() {
-
+		//_ctx.update(_driver);
 	}
 
 	void Facade::build(render::DrawList& out, const core::Extent& size) {
+		_esp.run(_ctx, out, size);
+
+
 		const float t = float(GetTickCount64() % 2000) / 2000.0f;
 
 		core::Vec2 pos0{ 50.f + t * (size.w - 200.f), 60.f };

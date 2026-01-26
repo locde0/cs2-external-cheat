@@ -6,22 +6,23 @@
 #include "../render/draw.h"
 #include "../domain/facade.h"
 #include "../driver/driver.h"
+#include "../core/config/config.h"
 
 namespace app {
 
 	class App {
 	public:
-		App();
+		explicit App();
 
 		int run();
 
 	private:
 		bool ensureConnection();
 		void resetConnection();
-
 		bool resolve();
 
 		bool _is_attached = false;
+		const core::config::AppConfig& _cfg;
 
 		platform::Target _target;
 		platform::Overlay _overlay;

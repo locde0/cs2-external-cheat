@@ -1,10 +1,13 @@
 #include "app.h"
 #include "../platform/window.h"
 #include "../core/path/path.h"
+#include "../domain/game/offsets/offsets.h"
+#include "../core/config/config.h"
 
 namespace app {
-    App::App() 
-        : _driver(L"kmd", core::path::makeFullPath(L"kmd.sys"))
+    App::App()
+        : _cfg(core::config::Settings::read()),
+        _driver(_cfg.system.driver_name, core::path::makeFullPath(_cfg.system.driver_file))
     {}
 
     bool App::ensureConnection() {
@@ -23,7 +26,7 @@ namespace app {
 
         l_time = now;
 
-        if (_driver.attach(L"notepad.exe", L"client.dll")) {
+        if (_driver.attach(_cfg.system.process.c_str(), _cfg.system.module.c_str())) {
             if (resolve()) {
                 _is_attached = true;
                 return true;
@@ -48,7 +51,10 @@ namespace app {
         if (!_driver.init())
 			throw std::runtime_error("failed to init driver");
 
-        if (!_overlay.create(L"overlay", { 1, 1 }))
+        if (!domain::game::offsets::update())
+			throw std::runtime_error("failed to update offsets");
+
+        if (!_overlay.create(_cfg.overlay.title.c_str(), {1, 1}))
             throw std::runtime_error("failed to create overlay window");
 
         _renderer.init(_overlay.handle(), _overlay.size());
@@ -61,7 +67,7 @@ namespace app {
                 _renderer.resize(size);
 
             if (!ensureConnection()) {
-                Sleep(50);
+                Sleep(_cfg.overlay.delay);
                 continue;
             }
 
@@ -78,6 +84,8 @@ namespace app {
             _renderer.begin();
             _renderer.draw(_draw);
             _renderer.end();
+
+            core::config::Settings::get().update();
         }
 
         return 0;

@@ -1,5 +1,10 @@
+# NuGet Packages
+*.nupkg
+packages/
+
 build/
 .vs/
+
 
 *.user
 *.filters
