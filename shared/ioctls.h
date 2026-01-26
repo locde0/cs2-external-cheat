@@ -22,8 +22,8 @@ namespace kmd {
     struct request {
         HANDLE process_id;
 
-        void* target;
-        void* buffer;
+        PVOID target;
+        PVOID buffer;
         
         SIZE_T size;
         SIZE_T transferred;

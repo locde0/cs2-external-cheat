@@ -12,13 +12,12 @@ namespace domain {
 
     class Facade {
     public:
-        //Facade(driver::Driver& drv);
+        Facade(driver::Driver&);
 
         void update();
         void build(render::DrawList&, const core::Extent&);
 
     private:
-        //driver::Driver& _driver;
         game::Context _ctx;
         features::Esp _esp;
     };

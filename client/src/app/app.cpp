@@ -7,7 +7,8 @@
 namespace app {
     App::App()
         : _cfg(core::config::Settings::read()),
-        _driver(_cfg.system.driver_name, core::path::makeFullPath(_cfg.system.driver_file))
+        _driver(_cfg.system.driver_name, core::path::makeFullPath(_cfg.system.driver_file)),
+        _facade(_driver)
     {}
 
     bool App::ensureConnection() {
@@ -51,8 +52,11 @@ namespace app {
         if (!_driver.init())
 			throw std::runtime_error("failed to init driver");
 
-        if (!domain::game::offsets::update())
+        if (!game::offsets::update())
 			throw std::runtime_error("failed to update offsets");
+
+        if (!game::offsets::Offsets::get().load())
+			throw std::runtime_error("failed to load offsets");
 
         if (!_overlay.create(_cfg.overlay.title.c_str(), {1, 1}))
             throw std::runtime_error("failed to create overlay window");

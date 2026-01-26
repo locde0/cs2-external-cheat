@@ -5,7 +5,22 @@
 
 #pragma comment(lib, "urlmon.lib")
 
-namespace domain::game::offsets {
+namespace {
+
+    uint32_t getEntityIdentitySize(const json& cei) {
+        auto& fields = cei["fields"];
+        uint32_t max = 0;
+
+        for (auto& [name, offset] : fields.items())
+            if (offset > max)
+                max = offset;
+
+        return max + 8;
+    }
+
+}
+
+namespace game::offsets {
 
     bool update() {
         const auto& cfg = core::config::Settings::read().updater;
@@ -31,10 +46,26 @@ namespace domain::game::offsets {
             std::ifstream f2("client_dll.json");
             if (!f2) return false;
             json j2 = json::parse(f2);
+            json& classes = j2["client.dll"]["classes"];
 
-            _schemas.m_iHealth = j2["client.dll"]["classes"]["C_BaseEntity"]["fields"]["m_iHealth"];
-            _schemas.m_iTeamNum = j2["client.dll"]["classes"]["C_BaseEntity"]["fields"]["m_iTeamNum"];
-            _schemas.m_vOldOrigin = j2["client.dll"]["classes"]["C_BasePlayerPawn"]["fields"]["m_vOldOrigin"];
+            _client.dwEntityIdentitySize = getEntityIdentitySize(classes["CEntityIdentity"]);
+
+            _schemas.m_iHealth = classes["C_BaseEntity"]["fields"]["m_iHealth"];
+            _schemas.m_iTeamNum = classes["C_BaseEntity"]["fields"]["m_iTeamNum"];
+            _schemas.m_pGameSceneNode = classes["C_BaseEntity"]["fields"]["m_pGameSceneNode"];
+            _schemas.m_pCollision = classes["C_BaseEntity"]["fields"]["m_pCollision"];
+
+            _schemas.m_iszPlayerName = classes["CBasePlayerController"]["fields"]["m_iszPlayerName"];
+            _schemas.m_hPlayerPawn = classes["CCSPlayerController"]["fields"]["m_hPlayerPawn"];
+
+            _schemas.m_vecAbsOrigin = classes["CGameSceneNode"]["fields"]["m_vecAbsOrigin"];
+
+            _schemas.m_vecMins = classes["CCollisionProperty"]["fields"]["m_vecMins"];
+            _schemas.m_vecMaxs = classes["CCollisionProperty"]["fields"]["m_vecMaxs"];
+
+            _schemas.m_pObserverServices = classes["C_BasePlayerPawn"]["fields"]["m_pObserverServices"];
+
+            _schemas.m_hObserverTarget = classes["CPlayer_ObserverServices"]["fields"]["m_hObserverTarget"];
 
             return true;
         }

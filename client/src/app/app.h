@@ -24,12 +24,13 @@ namespace app {
 		bool _is_attached = false;
 		const core::config::AppConfig& _cfg;
 
-		platform::Target _target;
-		platform::Overlay _overlay;
-		gfx::Renderer _renderer;
 		driver::Driver _driver;
 		domain::Facade _facade;
-		render::DrawList _draw;
+
+		platform::Target _target{};
+		platform::Overlay _overlay{};
+		gfx::Renderer _renderer{};
+		render::DrawList _draw{};
 	};
 
 }

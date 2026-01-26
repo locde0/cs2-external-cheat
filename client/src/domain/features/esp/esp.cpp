@@ -1,33 +1,43 @@
 #include "esp.h"
+#include "../../math/math.h"
 
 namespace features {
 
+    Esp::Esp() 
+        : _cfg(core::config::Settings::read().esp)
+    {}
+
 	void Esp::run(const game::Context& ctx, render::DrawList& draw, const core::Extent& ss) {
-        if (!_enabled) return;
+        if (!_cfg.enabled) return;
 
         const auto& local = ctx.local();
-        const auto& vm = local.vm;
 
         for (const auto& ent : ctx.entities()) {
-            if (!ent.is_valid || ent.health <= 0) continue;
-            if (ent.team == local.team) continue;
+            if (ent.ptr == local.spect_ptr) continue;
 
-            math::Vec3 screen_pos, screen_head;
+            bool is_mate = ent.team == local.team;
+            if (is_mate && !_cfg.teammates.enabled) continue;
 
-            if (!math::w2s(ent.pos, screen_pos, vm, ss)) continue;
-            if (!math::w2s(ent.head, screen_head, vm, ss)) continue;
+            core::Color color = is_mate ? _cfg.teammates.color : _cfg.enemies.color;
 
-            float height = screen_pos.y - screen_head.y;
-            float width = height / 2.0f;
-            float x = screen_pos.x - (width / 2.0f);
-            float y = screen_head.y;
+            float w_height = ent.maxs.z - ent.mins.z;
 
-            if (_box) {
-                draw.add(
-                    { x, y, width, height },
-                    core::Color::red()
-                );
-            }
+            math::Vec3 head = ent.feet;
+            head.z += w_height;
+
+            math::Vec3 s_feet, s_head;
+            if (!math::w2s(ent.feet, s_feet, local.vm, ss)) continue;
+            if (!math::w2s(head, s_head, local.vm, ss)) continue;
+
+            float h = s_feet.y - s_head.y;
+            float w = h / 2.4f;
+            float x = s_head.x - (w / 2.0f);
+            float y = s_head.y;
+
+            draw.add(
+                { x, y, w, h },
+                color
+            );
         }
 	}
 

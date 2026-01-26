@@ -43,7 +43,7 @@ namespace driver {
 		T temp = {};
 
 		kmd::request r;
-		r.target = addr;
+		r.target = reinterpret_cast<PVOID>(addr);
 		r.buffer = &temp;
 		r.size = sizeof(T);
 
@@ -60,8 +60,8 @@ namespace driver {
 	template <typename T>
 	void Driver::write(const std::uintptr_t addr, const T& value) {
 		kmd::request r;
-		r.target = addr;
-		r.buffer = &value;
+		r.target = reinterpret_cast<PVOID>(addr);
+		r.buffer = (PVOID)(&value);
 		r.size = sizeof(T);
 
 		DeviceIoControl(
