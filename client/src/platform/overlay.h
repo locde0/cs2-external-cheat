@@ -21,12 +21,20 @@ namespace platform {
 		bool running() const { return _running; }
 
 	private:
+		struct State {
+			core::Vec2 bounds{};
+			core::Extent size{};
+			bool minimized = false;
+			HWND t_hwnd = nullptr;
+		};
+
 		static LRESULT CALLBACK wndProcSetup(HWND, UINT, WPARAM, LPARAM);
 		static LRESULT CALLBACK wndProcThunk(HWND, UINT, WPARAM, LPARAM);
 		LRESULT wndProc(HWND, UINT, WPARAM, LPARAM);
 
 		void updateSize();
 
+		State _l_state{};
 		HWND _hwnd = nullptr;
 		bool _running = true;
 		core::Extent _size{};

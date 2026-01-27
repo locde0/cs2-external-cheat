@@ -42,6 +42,7 @@ namespace game::offsets {
             _client.dwEntityList = j1["client.dll"]["dwEntityList"];
             _client.dwViewMatrix = j1["client.dll"]["dwViewMatrix"];
             _client.dwLocalPlayerPawn = j1["client.dll"]["dwLocalPlayerPawn"];
+            _client.dwLocalPlayerController = j1["client.dll"]["dwLocalPlayerController"];
 
             std::ifstream f2("client_dll.json");
             if (!f2) return false;
@@ -54,11 +55,13 @@ namespace game::offsets {
             _schemas.m_iTeamNum = classes["C_BaseEntity"]["fields"]["m_iTeamNum"];
             _schemas.m_pGameSceneNode = classes["C_BaseEntity"]["fields"]["m_pGameSceneNode"];
             _schemas.m_pCollision = classes["C_BaseEntity"]["fields"]["m_pCollision"];
+            _schemas.m_lifeState = classes["C_BaseEntity"]["fields"]["m_lifeState"];
 
             _schemas.m_iszPlayerName = classes["CBasePlayerController"]["fields"]["m_iszPlayerName"];
             _schemas.m_hPlayerPawn = classes["CCSPlayerController"]["fields"]["m_hPlayerPawn"];
 
             _schemas.m_vecAbsOrigin = classes["CGameSceneNode"]["fields"]["m_vecAbsOrigin"];
+            _schemas.m_bDormant = classes["CGameSceneNode"]["fields"]["m_bDormant"];
 
             _schemas.m_vecMins = classes["CCollisionProperty"]["fields"]["m_vecMins"];
             _schemas.m_vecMaxs = classes["CCollisionProperty"]["fields"]["m_vecMaxs"];

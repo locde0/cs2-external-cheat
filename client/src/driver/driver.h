@@ -20,11 +20,13 @@ namespace driver {
 		DWORD pid() const { return _pid; }
 		uintptr_t b_addr() const { return _b_addr; }
 
-		template <typename T>
-		T read(const std::uintptr_t);
+		bool readBuf(const uintptr_t, void*, size_t);
 
 		template <typename T>
-		void write(const std::uintptr_t, const T&);
+		T read(const uintptr_t);
+
+		template <typename T>
+		void write(const uintptr_t, const T&);
 
 	private:
 		bool exists();
@@ -39,26 +41,14 @@ namespace driver {
 	};
 
 	template <typename T>
-	T Driver::read(const std::uintptr_t addr) {
+	T Driver::read(const uintptr_t addr) {
 		T temp = {};
-
-		kmd::request r;
-		r.target = reinterpret_cast<PVOID>(addr);
-		r.buffer = &temp;
-		r.size = sizeof(T);
-
-		DeviceIoControl(
-			_device.get(),
-			kmd::ioctl::read,
-			&r, sizeof(r), &r, sizeof(r),
-			nullptr, nullptr
-		);
-
+		readBuf(addr, &temp, sizeof(T));
 		return temp;
 	}
 
 	template <typename T>
-	void Driver::write(const std::uintptr_t addr, const T& value) {
+	void Driver::write(const uintptr_t addr, const T& value) {
 		kmd::request r;
 		r.target = reinterpret_cast<PVOID>(addr);
 		r.buffer = (PVOID)(&value);

@@ -16,9 +16,9 @@ namespace game {
 
     struct LocalPlayer {
         uintptr_t ptr;
+        uintptr_t spect_ptr;
         int team;
         math::ViewMatrix vm;
-        uintptr_t spect_ptr;
     };
 
 }

@@ -41,6 +41,20 @@ namespace driver {
 		);
 	}
 
+	bool Driver::readBuf(const uintptr_t addr, void* buf, size_t size) {
+		kmd::request r;
+		r.target = reinterpret_cast<PVOID>(addr);
+		r.buffer = buf;
+		r.size = size;
+
+		return DeviceIoControl(
+			_device.get(),
+			kmd::ioctl::read,
+			&r, sizeof(r), &r, sizeof(r),
+			nullptr, nullptr
+		);
+	}
+
 	bool Driver::exists() {
 		core::scoped::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
 		if (!scm) return false;

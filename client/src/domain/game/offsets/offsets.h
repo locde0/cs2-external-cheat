@@ -16,7 +16,7 @@ namespace game::offsets {
             uintptr_t dwEntityList = 0;
             uintptr_t dwViewMatrix = 0;
             uintptr_t dwLocalPlayerPawn = 0;
-
+            uintptr_t dwLocalPlayerController = 0;
             uint32_t dwEntityIdentitySize = 0;
         };
 
@@ -26,13 +26,17 @@ namespace game::offsets {
             uintptr_t m_iTeamNum = 0; // uint8
             uintptr_t m_pGameSceneNode = 0; // CGameSceneNode*
 			uintptr_t m_pCollision = 0; // CCollisionProperty*
+            uintptr_t m_lifeState = 0; // uint8
 
             // CBasePlayerController
             uintptr_t m_iszPlayerName = 0; // char[128]
+
+            // CCSPlayerController
             uintptr_t m_hPlayerPawn = 0; // CHandle<C_BasePlayerPawn>
 
             // CGameSceneNode
             uintptr_t m_vecAbsOrigin = 0; // Vector
+            uintptr_t m_bDormant = 0; // bool
 
             // CCollisionProperty
 			uintptr_t m_vecMins = 0; // Vector

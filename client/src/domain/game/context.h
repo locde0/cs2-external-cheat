@@ -2,6 +2,7 @@
 #include <vector>
 #include "schemes.h"
 #include "offsets/offsets.h"
+#include "../../core/config/config.h"
 #include "../../driver/driver.h"
 
 namespace game {
@@ -18,9 +19,12 @@ namespace game {
 	private:
 		driver::Driver& _driver;
 		offsets::Offsets& _off;
+		const core::config::EspConfig& _cfg;
 
 		LocalPlayer _local{};
-		std::vector<Entity> _entities{};
+		std::vector<Entity> _entities;
+		std::vector<uint8_t> _buf;
+		std::vector<uint8_t> _pawn_buf;
 	};
 
 }

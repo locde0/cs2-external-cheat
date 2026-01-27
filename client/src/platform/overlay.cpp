@@ -48,16 +48,32 @@ namespace platform {
 
         if (!t_hwnd || !IsWindow(t_hwnd)) return false;
 
+        if (_l_state.t_hwnd != t_hwnd) {
+            _l_state = {};
+            _l_state.t_hwnd = t_hwnd;
+            ShowWindow(_hwnd, SW_SHOWNA);
+        }
+
         WindowInfo wi;
         if (!queryWindowInfo(t_hwnd, wi))
             return false;
 
         if (wi.minimized) {
-            hide();
+            if (!_l_state.minimized) {
+                hide();
+                _l_state.minimized = true;
+            }
             return true;
         }
 
-        ShowWindow(_hwnd, SW_SHOWNA);
+        if (_l_state.minimized) {
+            ShowWindow(_hwnd, SW_SHOWNA);
+            _l_state.minimized = false;
+            _l_state.bounds.x = -9999;
+        }
+
+        if (wi.bounds.left == _l_state.bounds.x && wi.bounds.top == _l_state.bounds.y && wi.size == _l_state.size)
+            return true;
 
         HWND insertAfter = platform::calcInsertAfter(t_hwnd, _hwnd, wi.topmost);
 
@@ -67,13 +83,15 @@ namespace platform {
             wi.bounds.left, wi.bounds.top, wi.size.w, wi.size.h,
             SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_ASYNCWINDOWPOS
         );
-
+            
+        _l_state.bounds.x = static_cast<float>(wi.bounds.left);
+        _l_state.bounds.y = static_cast<float>(wi.bounds.top);
+        _l_state.size = wi.size;
         return true;
     }
 
     void Overlay::hide() {
-        if (_hwnd && IsWindowVisible(_hwnd))
-            ShowWindow(_hwnd, SW_HIDE);
+        ShowWindow(_hwnd, SW_HIDE);
     }
 
     bool Overlay::resize(core::Extent& out) {

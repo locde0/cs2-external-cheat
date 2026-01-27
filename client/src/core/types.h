@@ -26,6 +26,10 @@ namespace core {
 
     struct Extent {
         int w, h;
+
+        bool operator==(const Extent& o) const {
+            return w == o.w && h == o.h;
+		}
     };
 
 }

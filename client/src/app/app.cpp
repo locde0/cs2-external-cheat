@@ -1,8 +1,11 @@
 #include "app.h"
+#include <thread>
 #include "../platform/window.h"
 #include "../core/path/path.h"
 #include "../domain/game/offsets/offsets.h"
 #include "../core/config/config.h"
+
+#pragma comment(lib, "winmm.lib")
 
 namespace app {
     App::App()
@@ -63,6 +66,8 @@ namespace app {
 
         _renderer.init(_overlay.handle(), _overlay.size());
 
+        timeBeginPeriod(1);
+
         while (_overlay.running()) {
             _overlay.pumpMsgs();
 
@@ -71,7 +76,7 @@ namespace app {
                 _renderer.resize(size);
 
             if (!ensureConnection()) {
-                Sleep(_cfg.overlay.delay);
+                std::this_thread::sleep_for(std::chrono::milliseconds(_cfg.overlay.delay));
                 continue;
             }
 
@@ -80,9 +85,8 @@ namespace app {
                 continue;
             }
 
-            _facade.update();
-
             _draw.clear();
+            _facade.update();
             _facade.build(_draw, _overlay.size());
 
             _renderer.begin();
@@ -90,7 +94,10 @@ namespace app {
             _renderer.end();
 
             core::config::Settings::get().update();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
+
+        timeEndPeriod(1);
 
         return 0;
     }

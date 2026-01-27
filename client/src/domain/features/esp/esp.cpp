@@ -9,6 +9,7 @@ namespace features {
 
 	void Esp::run(const game::Context& ctx, render::DrawList& draw, const core::Extent& ss) {
         if (!_cfg.enabled) return;
+        if (ctx.entities().empty()) return;
 
         const auto& local = ctx.local();
 
@@ -22,11 +23,13 @@ namespace features {
 
             float w_height = ent.maxs.z - ent.mins.z;
 
+            math::Vec3 feet = ent.feet;
+            feet.z += ent.mins.z;
             math::Vec3 head = ent.feet;
             head.z += w_height;
 
             math::Vec3 s_feet, s_head;
-            if (!math::w2s(ent.feet, s_feet, local.vm, ss)) continue;
+            if (!math::w2s(feet, s_feet, local.vm, ss)) continue;
             if (!math::w2s(head, s_head, local.vm, ss)) continue;
 
             float h = s_feet.y - s_head.y;
