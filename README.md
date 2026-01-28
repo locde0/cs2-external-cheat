@@ -57,10 +57,9 @@ configuration file is automatically generated. you can modify it while the softw
     - this will compile both `kmd.sys` (driver) and `client.exe` (client)
 
 ### Usage
-1. **Load Driver:** register and start the `kmd.sys` service (or use a manual mapper)
-2. **Start Game:** run Counter-Strike 2 (recommended with `-insecure`)
-3. **Run Client:** execute `client.exe`
-4. **Enjoy:** overlay should appear immediately. edit `settings.ini` to customize colors and features in real-time
+1. **Start Game:** run Counter-Strike 2
+2. **Run Client:** execute `client.exe`
+3. **Enjoy:** overlay should appear immediately. edit `settings.ini` to customize colors and features in real-time
 
 ---
 
