@@ -2,6 +2,7 @@
 #include "../win.h"
 #include <iomanip>
 #include <fstream>
+#include <string>
 
 namespace {
 
@@ -20,6 +21,17 @@ namespace {
 
     int readInt(const std::wstring& file, const wchar_t* sect, const wchar_t* key, int def) {
         return GetPrivateProfileIntW(sect, key, def, file.c_str());
+    }
+
+    float readFloat(const std::wstring& file, const wchar_t* sect, const wchar_t* key, float def) {
+        std::wstring s = readStr(file, sect, key, L"");
+        if (s.empty()) return def;
+        try {
+            return std::stof(s);
+        }
+        catch (...) {
+            return def;
+        }
     }
 
     core::Color readColor(const std::wstring& file, const wchar_t* sect, const wchar_t* key, const core::Color& def) {
@@ -44,33 +56,36 @@ namespace {
 
 namespace core::config {
 
-    void Settings::init(const std::wstring& path) {
+    void Settings::runAutoUpdate(const std::wstring& path) {
         _path = path;
 
-        if (!std::filesystem::exists(_path))
-            saveDefault();
-
+        if (!std::filesystem::exists(_path)) saveDefault();
         load();
 
         std::error_code ec;
         _lw_time = std::filesystem::last_write_time(_path, ec);
+
+        _running = true;
+        _watcher_thread = std::thread(
+            [this]() {
+                while (_running) {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+                    std::error_code ec;
+                    auto w_time = std::filesystem::last_write_time(_path, ec);
+
+                    if (!ec && w_time != _lw_time) {
+                        load();
+                        _lw_time = w_time;
+                    }
+                }
+            }
+        );
+        _watcher_thread.detach();
     }
 
-    void Settings::update() {
-        auto now = std::chrono::steady_clock::now();
-        if (now - _lc_time < std::chrono::seconds(3)) return;
-        _lc_time = now;
-
-        if (!std::filesystem::exists(_path))
-            saveDefault();
-
-        std::error_code ec;
-        auto w_time = std::filesystem::last_write_time(_path, ec);
-
-        if (!ec && w_time != _lw_time) {
-            load();
-            _lw_time = w_time;
-        }
+    void Settings::stopAutoUpdate() {
+        _running = false;
     }
 
     void Settings::load() {
@@ -87,6 +102,8 @@ namespace core::config {
         _cfg.overlay.delay = readInt(_path, L"overlay", L"delay", _cfg.overlay.delay);
 
         _cfg.esp.enabled = readBool(_path, L"esp", L"enabled", _cfg.esp.enabled);
+        _cfg.esp.box_thickness = readInt(_path, L"esp", L"box_thickness", _cfg.esp.box_thickness);
+        _cfg.esp.bar_width = readFloat(_path, L"esp", L"bar_width", _cfg.esp.bar_width);
 
         _cfg.esp.enemies.enabled = readBool(_path, L"esp_enemy", L"enabled", _cfg.esp.enemies.enabled);
         _cfg.esp.enemies.box = readBool(_path, L"esp_enemy", L"box", _cfg.esp.enemies.box);
@@ -139,6 +156,8 @@ namespace core::config {
 
         file << L"[esp]\n";
         writeBool(L"enabled", _cfg.esp.enabled);
+        file << L"box_thickness=" << _cfg.esp.box_thickness << L"\n";
+        file << L"bar_width=" << std::fixed << std::setprecision(1) << _cfg.esp.bar_width << L"\n";
         file << L"\n";
 
         file << L"[esp_enemy]\n";

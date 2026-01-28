@@ -2,6 +2,7 @@
 #include <string>
 #include <chrono>
 #include <filesystem>
+#include <thread>
 #include "../types.h"
 
 namespace core::config {
@@ -37,6 +38,8 @@ namespace core::config {
 
     struct EspConfig {
         bool enabled = true;
+        int box_thickness = 1;
+        float bar_width = 4;
 
         EntityEspConfig enemies{ true, true, true, core::Color::red() };
         EntityEspConfig teammates{ false, false, false, core::Color::green() };
@@ -71,20 +74,22 @@ namespace core::config {
         Settings(const Settings&) = delete;
         void operator=(const Settings&) = delete;
 
-        void init(const std::wstring& path);
-        void update();
+        void runAutoUpdate(const std::wstring&);
+        void stopAutoUpdate();
 
     private:
         Settings() = default;
-        ~Settings() = default;
+        ~Settings() { stopAutoUpdate(); }
 
         void load();
         void saveDefault();
 
         AppConfig _cfg{};
         std::wstring _path;
+
+        std::atomic<bool> _running = false;
+        std::thread _watcher_thread;
         std::filesystem::file_time_type _lw_time;
-        std::chrono::steady_clock::time_point _lc_time;
     };
 
 }

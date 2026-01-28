@@ -54,27 +54,28 @@ namespace features {
     }
 
     void Esp::drawBox(const BoundingBox& box, const core::Color& color, render::DrawList& draw) {
-        draw.addBox({ box.pos.x, box.pos.y, box.size.x, box.size.y }, color);
+        draw.addBox({ box.pos.x, box.pos.y, box.size.x, box.size.y, _cfg.box_thickness }, color);
     }
     
     void Esp::drawHealthBar(const BoundingBox& box, int health, render::DrawList& draw) {
         health = std::max(0, std::min(health, 100));
 
-        float bar_width = 4.0f;
-        float bar_pad = 2.0f;
+        float w = _cfg.bar_width;
+        float pad = 2.0f;
+        float offset_x = (_cfg.box_thickness > 1.0f) ? (_cfg.box_thickness + pad) : pad;
 
-        float bar_x = box.pos.x - bar_pad - bar_width;
-        float bar_y = box.pos.y;
-        float bar_h = box.size.y;
+        float x = box.pos.x - pad - w;
+        float y = box.pos.y;
+        float h = box.size.y;
 
         draw.addRect(
-            { bar_x, bar_y, bar_width, bar_h },
-            { 0.0f, 0.0f, 0.0f, 0.5f }
+            { x, y, w, h },
+            { 0.0f, 0.0f, 0.0f, 0.6f }
         );
 
         float hp_perc = health / 100.0f;
-        float fill_h = bar_h * hp_perc;
-        float fill_y = bar_y + (bar_h - fill_h);
+        float fill_h = h * hp_perc;
+        float fill_y = y + (h - fill_h);
 
         core::Color hp_color = {
             (health > 50) ? (1.0f - hp_perc) * 2.0f : 1.0f,
@@ -84,7 +85,7 @@ namespace features {
         };
 
         draw.addRect(
-            { bar_x + 1, fill_y + 1, bar_width - 2, fill_h - 2 },
+            { x + 1, fill_y + 1, w - 2, fill_h - 2 },
             hp_color
         );
     }

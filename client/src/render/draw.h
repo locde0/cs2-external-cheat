@@ -19,7 +19,7 @@ namespace render {
 		void clear();
 
 		void addLine(const core::Vec2&, const core::Vec2&, const core::Color&);
-		void addBox(const core::Rect&, const core::Color&);
+		void addBox(const core::Box&, const core::Color&);
 		void addRect(const core::Rect&, const core::Color&);
 
 		const std::vector<RectCmd>& rects() const { return _rects; }

@@ -93,12 +93,11 @@ namespace app {
             _renderer.draw(_draw);
             _renderer.end();
 
-            core::config::Settings::get().update();
             std::this_thread::sleep_for(std::chrono::milliseconds(_cfg.overlay.delay));
         }
 
         timeEndPeriod(1);
-
+        core::config::Settings::get().stopAutoUpdate();
         return 0;
     }
 }

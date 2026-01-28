@@ -11,6 +11,10 @@ namespace core {
         float x, y, w, h;
     };
 
+    struct Box : Rect {
+        int thickness = 1;
+    };
+
     struct Color {
         float r, g, b, a;
 

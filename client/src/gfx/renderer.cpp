@@ -209,7 +209,7 @@ namespace gfx {
         if (needed == 0) return;
 
         if (!_vb || needed > _vbCap) {
-            _vbCap = (needed < 256) ? 256 : needed + 128;
+            _vbCap = (needed < 512) ? 512 : needed + 128;
 
             D3D11_BUFFER_DESC bd{};
             bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -264,7 +264,7 @@ namespace gfx {
     }
 
     void Renderer::end() {
-        _swap->Present(1, 0);
+        _swap->Present(0, 0);
         if (_dcompDevice) _dcompDevice->Commit();
     }
 
