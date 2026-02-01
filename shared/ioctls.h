@@ -8,6 +8,7 @@
 #endif
 
 #define KMD_DEVICE_NAME L"\\\\.\\kmd"
+#define KMD_DRIVER_NAME L"\\Driver\\kmd"
 #define KMD_NT_DEVICE L"\\Device\\kmd"
 #define KMD_SYMLINK L"\\DosDevices\\kmd"
 

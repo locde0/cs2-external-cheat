@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shared", "shared\shared.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kmd", "kmd\kmd.vcxproj", "{AA99A415-713E-EB1F-DCCB-0E5B78FF28E7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kdmapper", "kdmapper\kdmapper.vcxproj", "{518E0636-BA8F-459D-ACAC-81BD33475E3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -37,6 +39,14 @@ Global
 		{AA99A415-713E-EB1F-DCCB-0E5B78FF28E7}.Release|x64.ActiveCfg = Release|x64
 		{AA99A415-713E-EB1F-DCCB-0E5B78FF28E7}.Release|x64.Build.0 = Release|x64
 		{AA99A415-713E-EB1F-DCCB-0E5B78FF28E7}.Release|x64.Deploy.0 = Release|x64
+		{518E0636-BA8F-459D-ACAC-81BD33475E3E}.Debug|ARM64.ActiveCfg = Debug|x64
+		{518E0636-BA8F-459D-ACAC-81BD33475E3E}.Debug|ARM64.Build.0 = Debug|x64
+		{518E0636-BA8F-459D-ACAC-81BD33475E3E}.Debug|x64.ActiveCfg = Debug|x64
+		{518E0636-BA8F-459D-ACAC-81BD33475E3E}.Debug|x64.Build.0 = Debug|x64
+		{518E0636-BA8F-459D-ACAC-81BD33475E3E}.Release|ARM64.ActiveCfg = Release|x64
+		{518E0636-BA8F-459D-ACAC-81BD33475E3E}.Release|ARM64.Build.0 = Release|x64
+		{518E0636-BA8F-459D-ACAC-81BD33475E3E}.Release|x64.ActiveCfg = Release|x64
+		{518E0636-BA8F-459D-ACAC-81BD33475E3E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
