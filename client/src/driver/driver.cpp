@@ -2,14 +2,7 @@
 
 namespace driver {
 
-	Driver::Driver(const std::wstring name, const std::wstring path)
-		: _name(name), _path(path)
-	{}
-
 	bool Driver::init() {
-		if (!exists()) create();
-		start();
-
 		_device.reset(CreateFileW(
 			KMD_DEVICE_NAME,
 			GENERIC_READ,
@@ -53,47 +46,6 @@ namespace driver {
 			&r, sizeof(r), &r, sizeof(r),
 			nullptr, nullptr
 		);
-	}
-
-	bool Driver::exists() {
-		core::scoped::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
-		if (!scm) return false;
-
-		core::scoped::ScopedScHandle svc(OpenServiceW(scm.get(), _name.c_str(), SERVICE_QUERY_STATUS));
-
-		return svc;
-	}
-
-	bool Driver::create() {
-		core::scoped::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE));
-		if (!scm) return false;
-
-		core::scoped::ScopedScHandle svc(CreateServiceW(
-			scm.get(),
-			_name.c_str(),
-			_name.c_str(),
-			SERVICE_START | DELETE | SERVICE_STOP,
-			SERVICE_KERNEL_DRIVER,
-			SERVICE_DEMAND_START,
-			SERVICE_ERROR_IGNORE,
-			_path.c_str(),
-			nullptr, nullptr, nullptr, nullptr, nullptr
-		));
-
-		if (!svc && GetLastError() != ERROR_SERVICE_EXISTS)
-			return false;
-
-		return true;
-	}
-	
-	bool Driver::start() {
-		core::scoped::ScopedScHandle scm(OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
-		if (!scm) return false;
-
-		core::scoped::ScopedScHandle svc(OpenServiceW(scm.get(), _name.c_str(), SERVICE_START));
-		if (!svc) return false;
-
-		return StartServiceW(svc.get(), 0, nullptr) || GetLastError() == ERROR_SERVICE_ALREADY_RUNNING;
 	}
 
 }

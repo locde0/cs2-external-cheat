@@ -9,7 +9,7 @@ namespace driver {
 
 	class Driver {
 	public:
-		explicit Driver(const std::wstring, const std::wstring);
+		Driver() = default;
 
 		Driver(const Driver&) = delete;
 		Driver& operator=(const Driver&) = delete;
@@ -29,12 +29,6 @@ namespace driver {
 		void write(const uintptr_t, const T&);
 
 	private:
-		bool exists();
-		bool create();
-		bool start();
-
-		std::wstring _name;
-		std::wstring _path;
 		uintptr_t _b_addr = 0;
 		DWORD _pid = 0;
 		core::scoped::ScopedHandle _device;

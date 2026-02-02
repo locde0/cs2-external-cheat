@@ -31,28 +31,4 @@ namespace core::scoped {
         _h = h;
     }
 
-    ScopedScHandle::ScopedScHandle(SC_HANDLE h) 
-        : _h(h) 
-    {}
-
-    ScopedScHandle::ScopedScHandle(ScopedScHandle&& o) noexcept 
-        : _h(o._h) 
-    { 
-        o._h = nullptr; 
-    }
-
-    ScopedScHandle::~ScopedScHandle() {
-        if (_h)
-            CloseServiceHandle(_h);
-    }
-
-    ScopedScHandle& ScopedScHandle::operator=(ScopedScHandle&& o) noexcept {
-        if (this != &o) { 
-            if (_h) CloseServiceHandle(_h); 
-            _h = o._h; 
-            o._h = nullptr; 
-        }
-        return *this;
-    }
-
 }

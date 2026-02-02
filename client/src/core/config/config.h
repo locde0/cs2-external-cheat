@@ -8,9 +8,6 @@
 namespace core::config {
 
     struct SystemConfig {
-        std::wstring driver_name = L"kmd";
-        std::wstring driver_file = L"kmd.sys";
-
         std::wstring process = L"cs2.exe";
         std::wstring module = L"client.dll";
     };

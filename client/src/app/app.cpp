@@ -9,9 +9,7 @@
 
 namespace app {
     App::App()
-        : _cfg(core::config::Settings::read()),
-        _driver(_cfg.system.driver_name, core::path::makeFullPath(_cfg.system.driver_file)),
-        _facade(_driver)
+        : _cfg(core::config::Settings::read()), _facade(_driver)
     {}
 
     bool App::ensureConnection() {

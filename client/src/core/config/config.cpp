@@ -89,8 +89,6 @@ namespace core::config {
     }
 
     void Settings::load() {
-        _cfg.system.driver_name = readStr(_path, L"system", L"driver_name", _cfg.system.driver_name.c_str());
-        _cfg.system.driver_file = readStr(_path, L"system", L"driver_file", _cfg.system.driver_file.c_str());
         _cfg.system.process = readStr(_path, L"system", L"process", _cfg.system.process.c_str());
         _cfg.system.module = readStr(_path, L"system", L"module", _cfg.system.module.c_str());
 
@@ -137,8 +135,6 @@ namespace core::config {
         };
 
         file << L"[system]\n";
-        file << L"driver_name=" << _cfg.system.driver_name << L"\n";
-        file << L"driver_file=" << _cfg.system.driver_file << L"\n";
         file << L"process=" << _cfg.system.process << L"\n";
         file << L"module=" << _cfg.system.module << L"\n";
         file << L"\n";

@@ -24,7 +24,7 @@ namespace app {
 		bool _is_attached = false;
 		const core::config::AppConfig& _cfg;
 
-		driver::Driver _driver;
+		driver::Driver _driver{};
 		domain::Facade _facade;
 
 		platform::Target _target{};

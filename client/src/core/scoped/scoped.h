@@ -24,22 +24,4 @@ namespace core::scoped {
         HANDLE _h = INVALID_HANDLE_VALUE;
     };
 
-    class ScopedScHandle {
-    public:
-        explicit ScopedScHandle(SC_HANDLE h);
-        ~ScopedScHandle();
-
-        ScopedScHandle(ScopedScHandle&&) noexcept;
-        ScopedScHandle& operator=(ScopedScHandle&&) noexcept;
-
-        ScopedScHandle(const ScopedScHandle&) = delete;
-        ScopedScHandle& operator=(const ScopedScHandle&) = delete;
-
-        SC_HANDLE get() const { return _h; }
-        operator bool() const { return _h != nullptr; }
-
-    private:
-        SC_HANDLE _h = nullptr;
-    };
-
 }
