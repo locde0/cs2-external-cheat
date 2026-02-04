@@ -42,19 +42,11 @@ namespace core::config {
         EntityEspConfig teammates{ false, false, false, core::Color::green() };
     };
 
-    struct MemoryConfig {
-        int max_items = 64;
-        int max_pawns = 512;
-        int item_size = 256;
-        int pawn_size = 128;
-    };
-
     struct AppConfig {
         SystemConfig system;
         UpdaterConfig updater;
         OverlayConfig overlay;
         EspConfig esp;
-        MemoryConfig memory;
     };
 
     class Settings {

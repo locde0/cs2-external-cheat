@@ -20,12 +20,9 @@ namespace game {
 		driver::Driver& _driver;
 		offsets::Offsets& _off;
 		const core::config::EspConfig& _esp_cfg;
-		const core::config::MemoryConfig& _m_cfg;
 
 		LocalPlayer _local{};
 		std::vector<Entity> _entities;
-		std::vector<uint8_t> _buf;
-		std::vector<uint8_t> _pawn_buf;
 	};
 
 }

@@ -13,6 +13,7 @@ if %errorlevel% NEQ 0 (
 set "ROOT_DIR=%~dp0"
 set "DRIVER_PATH=%ROOT_DIR%build\kmd.sys"
 set "KDMAPPER_PATH=%ROOT_DIR%build\kdmapper.exe"
+set "CLIENT_PATH=%ROOT_DIR%build\client.exe"
 
 if not exist "%KDMAPPER_PATH%" (
     color 0C
@@ -34,10 +35,20 @@ if not exist "%DRIVER_PATH%" (
     exit /b
 )
 
-:: --- 4. ЗАПУСК ---
+if not exist "%CLIENT_PATH%" (
+    color 0C
+    echo [-] error: client.exe not found at:
+    echo "%CLIENT_PATH%"
+    echo.
+    echo please build project!
+    pause
+    exit /b
+)
+
 cls
 echo [>] found kdmapper: %KDMAPPER_PATH%
 echo [>] found driver: %DRIVER_PATH%
+echo [>] found client: %CLIENT_PATH%
 echo.
 echo [!] attempting to load driver..
 echo.
@@ -46,10 +57,17 @@ echo.
 
 if %errorlevel% equ 0 (
     echo.
-    echo [OK] loader finished successfully.
+    echo [+] driver loaded successfully.
+    echo [>] starting client..
+    
+    timeout /t 1 /nobreak >nul
+    
+    "%CLIENT_PATH%"
 ) else (
     echo.
-    echo [X] loader failed with error code %errorlevel%.
+    echo [-] loader failed with error code %errorlevel%.
 )
 
+echo.
+echo [!] client process terminated.
 pause

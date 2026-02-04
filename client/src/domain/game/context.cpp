@@ -1,16 +1,14 @@
 #include "context.h"
+#include <iostream>
 #include "../math/math.h"
 
 namespace game {
 
 	Context::Context(driver::Driver& d)
 		: _driver(d), _off(offsets::Offsets::get()), 
-        _esp_cfg(core::config::Settings::read().esp),
-        _m_cfg(core::config::Settings::read().memory)
+        _esp_cfg(core::config::Settings::read().esp)
 	{
-        _entities.reserve(_m_cfg.max_items);
-        _buf.resize(_m_cfg.max_items * _m_cfg.item_size);
-        _pawn_buf.resize(_m_cfg.max_pawns * _m_cfg.pawn_size);
+        _entities.reserve(64);
 	}
 
 	void Context::update() {
@@ -38,41 +36,20 @@ namespace game {
             }
         }
 
-        uintptr_t chunk0_ptr = _driver.read<uintptr_t>(e_list + 16);
-        uintptr_t chunk1_ptr = _driver.read<uintptr_t>(e_list + 16 + 8);
-        if (!chunk0_ptr || !chunk1_ptr) return;
+        for (int i = 0; i < 64; i++) {
+            uintptr_t le = _driver.read<uintptr_t>(e_list + ((8 * (i & 0x7ff) >> 9) + 16));
+            if (!le) continue;
 
-        size_t size_ctrl = _m_cfg.max_items * stride;
-        size_t size_pawn = _m_cfg.max_pawns * stride;
-
-        if (_buf.size() < size_ctrl) _buf.resize(size_ctrl);
-        if (!_driver.readBuf(chunk0_ptr, _buf.data(), size_ctrl)) return;
-        
-        if (_pawn_buf.size() < size_pawn) _pawn_buf.resize(size_pawn);
-        if (!_driver.readBuf(chunk1_ptr, _pawn_buf.data(), size_pawn)) return;
-
-        for (int i = 0; i < _m_cfg.max_items; i++) {
-            uint8_t* entry_ptr = _buf.data() + (i * stride);
-            uintptr_t e_ctrl = *reinterpret_cast<uintptr_t*>(entry_ptr);
+            uintptr_t e_ctrl = _driver.read<uintptr_t>(le + stride * (i & 0x1ff));
             if (!e_ctrl) continue;
 
             uint32_t e_handle = _driver.read<uint32_t>(e_ctrl + _off.schemas().m_hPlayerPawn);
             if (!e_handle) continue;
 
-            uintptr_t entity = 0;
-            int chunk_id = (e_handle & 0x7fff) >> 9;
-            int chunk_inx = e_handle & 0x1ff;
+            uintptr_t entry_pawn = _driver.read<uintptr_t>(e_list + 0x8 * ((e_handle & 0x7FFF) >> 9) + 16);
+            if (!entry_pawn) continue;
 
-            if (chunk_id == 1 && chunk_inx < _m_cfg.max_pawns) {
-                uint8_t* pawn_entry_ptr = _pawn_buf.data() + (chunk_inx * stride);
-                entity = *reinterpret_cast<uintptr_t*>(pawn_entry_ptr);
-            }
-            else {
-                uintptr_t entry_pawn_list = _driver.read<uintptr_t>(e_list + 0x8 * chunk_id + 16);
-                if (entry_pawn_list)
-                    entity = _driver.read<uintptr_t>(entry_pawn_list + stride * chunk_inx);
-            }
-
+            uintptr_t entity = _driver.read<uintptr_t>(entry_pawn + stride * (e_handle & 0x1FF));
             if (!entity || entity == _local.ptr) continue;
 
             uint8_t life_state = _driver.read<uint8_t>(entity + _off.schemas().m_lifeState);

@@ -114,11 +114,6 @@ namespace core::config {
         _cfg.esp.teammates.health = readBool(_path, L"esp_team", L"health", _cfg.esp.teammates.health);
         //_cfg.esp.teammates.name = readBool(_path, L"esp_team", L"name", _cfg.esp.teammates.name);
         _cfg.esp.teammates.color = readColor(_path, L"esp_team", L"color", _cfg.esp.teammates.color);
-
-        _cfg.memory.max_items = readInt(_path, L"memory", L"max_items", _cfg.memory.max_items);
-        _cfg.memory.max_pawns = readInt(_path, L"memory", L"max_pawns", _cfg.memory.max_pawns);
-        _cfg.memory.item_size = readInt(_path, L"memory", L"item_size", _cfg.memory.item_size);
-        _cfg.memory.pawn_size = readInt(_path, L"memory", L"pawn_size", _cfg.memory.pawn_size);
     }
 
     void Settings::saveDefault() {
@@ -171,12 +166,6 @@ namespace core::config {
         //writeBool(L"name", _cfg.esp.teammates.name);
         writeColor(L"color", _cfg.esp.teammates.color);
         file << L"\n";
-
-        file << L"[memory]\n";
-        file << L"max_items=" << _cfg.memory.max_items << L"\n";
-        file << L"max_pawns=" << _cfg.memory.max_pawns << L"\n";
-        file << L"item_size=" << _cfg.memory.item_size << L"\n";
-        file << L"pawn_size=" << _cfg.memory.pawn_size << L"\n";
 
         file.close();
     }

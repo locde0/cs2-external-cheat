@@ -7,7 +7,8 @@
 The goal of this project is to explore Windows Kernel Driver development, DirectX 11 rendering techniques, and memory manipulation in a modern game environment without injecting code into the target process.
 
 ## 🚀 Features
-- **Kernel Level Access** - reads memory via a custom Kernel Mode Driver (`kmd`)
+- **Kernel Level Access** - reads memory via a custom Kernel Mode Driver (`kmd`) deployed via manual mapping
+- **Stealth Injection** - utilizes `kdmapper` to load the driver without creating a system service
 - **Zero Input Lag** - uses DirectComposition for a transparent overlay that does not interfere with mouse input or game performance
 - **Auto-Update** - automatically fetches the latest game offsets from GitHub on startup
 - **Hot Reload Config** - settings are monitored in a separate thread; changes in `settings.ini` apply instantly without restarting
@@ -26,7 +27,6 @@ The goal of this project is to explore Windows Kernel Driver development, Direct
 configuration file is automatically generated. you can modify it while the software is running
 
 **🖥️ System & Overlay:**
-- `driver_name` - service name of the kernel driver
 - `delay` - loop sleep time in ms (lower = smoother, higher = less CPU usage)
 
 **🎨 ESP Settings:**
@@ -39,8 +39,8 @@ configuration file is automatically generated. you can modify it while the softw
 ## 🛠️ Technologies
 - **Language:** C++20
 - **Render:** DirectX 11 + DirectComposition
-- **System:** Windows Kernel Driver (WDM)
-- **Dependencies:** nlohmann/json
+- **System:** Windows Kernel Driver (Manual Map)
+- **Dependencies:** nlohmann/json, kdmapper
 
 ---
 
@@ -49,16 +49,21 @@ configuration file is automatically generated. you can modify it while the softw
 ### Prerequisites
 - Visual Studio 2022 (C++ Desktop Development)
 - Windows Driver Kit (WDK)
+- **Windows:** Vulnerable driver blocklist recommended to be OFF
+- **BIOS:** Secure Boot may be enabled
 
 ### Building
 1. open the solution file (`.sln`) in Visual Studio 2022
 2. select **Release** configuration and **x64** platform
 3. build the Solution (`Ctrl+Shift+B`)
-    - this will compile both `kmd.sys` (driver) and `client.exe` (client)
+    - all binaries (`kmd.sys`, `kdmapper.exe`, `client.exe`) will be output to the `build` folder
 
 ### Usage
-1. **Start Game:** run Counter-Strike 2
-2. **Run Client:** execute `client.exe`
+> **Note:** It is recommended to restart your PC before running to ensure a clean memory state for the mapper.
+
+1. **Run Loader:** execute `load.bat` as Administrator
+   - this script will automatically map the driver and launch the client
+2. **Start Game:** run Counter-Strike 2
 3. **Enjoy:** overlay should appear immediately. edit `settings.ini` to customize colors and features in real-time
 
 ---
