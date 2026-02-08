@@ -4,7 +4,7 @@
 
 ## ⚡ Overview
 **CS2 External Kernel ESP** - is possibly a high-performance external software for Counter-Strike 2.
-The goal of this project is to explore Windows Kernel Driver development, DirectX 11 rendering techniques, and memory manipulation in a modern game environment without injecting code into the target process.
+the goal of this project is to explore Windows Kernel Driver development, DirectX 11 rendering techniques, and memory manipulation in a modern game environment without injecting code into the target process
 
 ## 🚀 Features
 - **Kernel Level Access** - reads memory via a custom Kernel Mode Driver (`kmd`) deployed via manual mapping
@@ -18,8 +18,6 @@ The goal of this project is to explore Windows Kernel Driver development, Direct
   - **Box:** outlined 2d boxes with customizable thickness
   - **Health Bar:** dynamic gradient (green → yellow → red) based on HP
   - **Team Check:** configurable filtering for enemies and teammates
-- **Rendering**
-  - optimized batch drawing using `LineList` and `TriangleList` topologies
 
 ---
 
@@ -46,11 +44,31 @@ configuration file is automatically generated. you can modify it while the softw
 
 ## 🏗️ How to Build & Run
 
+### System Preparation (Important)
+before building, configure Windows Security to prevent interference
+
+1. **Disable Core Isolation & Blocklists:**
+   - go to **Windows Security** → **Device Security** → **Core Isolation Details**
+   - turn **OFF** `Memory Integrity`
+   - turn **OFF** `Microsoft Vulnerable Driver Blocklist` (CRITICAL: required for `kdmapper` to load the vulnerable driver)
+2. **Add Exclusions:**
+   - go to **Windows Security** → **Virus & threat protection** → **Manage settings** → **Exclusions**
+   - add the project folder path to prevent Windows Defender from deleting `kdmapper.exe`
+
 ### Prerequisites
-- Visual Studio 2022 (C++ Desktop Development)
-- Windows Driver Kit (WDK)
-- **Windows:** Vulnerable driver blocklist recommended to be OFF
-- **BIOS:** Secure Boot may be enabled
+install tools in the following **strict order**:
+
+1. **Visual Studio 2022**
+   - install via **VS Installer** with workload: **Desktop development with C++**
+2. **Windows Driver Kit (WDK)**
+   - download the standalone **WDK Installer** from Microsoft (match version with your Windows SDK) and install it
+3. **Visual Studio Components**
+   - open **VS Installer** again → **Modify** → **Individual Components** tab
+   - search and install/verify these are checked:
+     - `Windows Driver Kit`
+     - `MSVC v143 - VS 2022 C++ x64/x86 Spectre-mitigated libs (Latest)`
+4. **Restart PC**
+   - reboot to apply environment variables and driver frameworks
 
 ### Building
 1. open the solution file (`.sln`) in Visual Studio 2022

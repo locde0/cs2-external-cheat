@@ -37,17 +37,18 @@ namespace gfx {
         _size = extent;
 
         UINT deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#if defined(_DEBUG)
-        deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
 
         D3D_FEATURE_LEVEL flOut{};
-        const D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_0 };
+        const D3D_FEATURE_LEVEL levels[] = {
+            D3D_FEATURE_LEVEL_11_0,
+            D3D_FEATURE_LEVEL_10_1,
+            D3D_FEATURE_LEVEL_10_0
+        };
 
         throwIfFailed(
             D3D11CreateDevice(
                 nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
-                deviceFlags, levels, 1, D3D11_SDK_VERSION,
+                deviceFlags, levels, 3, D3D11_SDK_VERSION,
                 &_dev, &flOut, &_ctx
             ),
             "D3D11CreateDevice"
